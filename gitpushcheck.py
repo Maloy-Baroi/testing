@@ -22,13 +22,25 @@ def git_push(commit_message, repo_link=None):
             # Add the remote repository
             subprocess.run(['git', 'remote', 'add', 'origin', repo_link])
             
-            # Prompt for email and password
-            email = input("Enter your GitHub email: ")
-            password = input("Enter your GitHub password: ")
+            # Check if existing credentials are available
+            email = subprocess.check_output(['git', 'config', '--get', 'user.email']).decode().strip()
+            password = subprocess.check_output(['git', 'config', '--get', 'user.password']).decode().strip()
             
-            # Configure Git to use the provided credentials
-            subprocess.run(['git', 'config', '--local', 'user.email', email])
-            subprocess.run(['git', 'config', '--local', 'user.password', password])
+            if email == '' or password == '':
+                use_existing = False
+            else:
+                use_existing = input("Existing credentials found. Do you want to use them? (yes/no): ").lower() == "yes"
+            
+            if use_existing:
+                print("Using existing credentials.")
+            else:
+                # Prompt for email and password
+                email = input("Enter your GitHub email: ")
+                password = input("Enter your GitHub password: ")
+                
+                # Configure Git to use the provided credentials
+                subprocess.run(['git', 'config', '--local', 'user.email', email])
+                subprocess.run(['git', 'config', '--local', 'user.password', password])
             
             # Push changes to the repository
             subprocess.run(['git', 'push', '-u', 'origin', 'main'])
@@ -39,15 +51,22 @@ def git_push(commit_message, repo_link=None):
 
         if repo_link is not None:
             # Retrieve stored email and password
-            email = subprocess.check_output(['git', 'config', '--local', 'user.email']).decode().strip()
-            password = subprocess.check_output(['git', 'config', '--local', 'user.password']).decode().strip()
+            email = subprocess.check_output(['git', 'config', '--get', 'user.email']).decode().strip()
+            password = subprocess.check_output(['git', 'config', '--get', 'user.password']).decode().strip()
             
             if email == '' or password == '':
-                # Prompt for email and password if not stored
+                use_existing = False
+            else:
+                use_existing = input("Existing credentials found. Do you want to use them? (yes/no): ").lower() == "yes"
+            
+            if use_existing:
+                print("Using existing credentials.")
+            else:
+                # Prompt for email and password
                 email = input("Enter your GitHub email: ")
                 password = input("Enter your GitHub password: ")
                 
-                # Configure Git to use the provided credentials and store them
+                # Configure Git to use the provided credentials
                 subprocess.run(['git', 'config', '--local', 'user.email', email])
                 subprocess.run(['git', 'config', '--local', 'user.password', password])
             
